@@ -3,10 +3,24 @@ module Exercises where
 import Control.Monad
 import Data.Array.IO
 import System.Random
+import Data.Functor
 
 -- 이 파일은 모임 때 함께 풀어나갈 파일입니다.
 
 -- Problem 1 ~ 10 : Lists --
+
+-- 1
+myLast :: [a] -> a
+myLast [x] = x
+myLast (x:xs) = myLast xs
+
+-- 2
+myButLast :: [a] -> a
+myButLast (x1:x2:[]) = x1
+myButLast (x:xs) = myButLast xs
+
+
+
 -- Problem 11 ~ 20 : Lists, continued --
 -- Problem 21 ~ 28 : Lists again --
 

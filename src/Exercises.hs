@@ -20,6 +20,10 @@ myButLast (x1:x2:[]) = x1
 myButLast (x:xs) = myButLast xs
 
 
+-- 3 
+elementAt :: [a] -> Int -> a
+elementAt (a:as) 0 = a
+elementAt (a:as) n = elementAt as (n-1) 
 
 -- Problem 11 ~ 20 : Lists, continued --
 -- Problem 21 ~ 28 : Lists again --

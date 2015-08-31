@@ -53,6 +53,9 @@ shuffle xs = do
     newArray :: Int -> [a] -> IO (IOArray Int a)
     newArray n xs' =  newListArray (1,n) xs'
 
+diffSelect :: Int -> Int -> IO [Int]
+diffSelect n m = rndSelect [1..m] n
+
 -- Problem 31 ~ 41 : Arithmetic --
 -- Problem 46 ~ 50 : Logic and codes --
 -- Problem 54A ~ 60 : Binary trees --

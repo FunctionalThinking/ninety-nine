@@ -37,8 +37,10 @@ myReverse :: [a] -> [a]
 myReverse xs = myReverse' [] xs
                where myReverse' acc [] = acc
                      myReverse' acc (a:as) = myReverse' (a:acc) as
---myReverse acc [] = acc
---myReverse (a:as) = myReverse as ++ [a]
+
+-- 6
+isPalindrome:: Eq a => [a] -> Bool
+isPalindrome xs = (myReverse xs) == xs
 
 -- Problem 11 ~ 20 : Lists, continued --
 -- Problem 21 ~ 28 : Lists again --

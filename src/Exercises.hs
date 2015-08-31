@@ -25,8 +25,15 @@ elementAt :: [a] -> Int -> a
 elementAt (a:as) 0 = a
 elementAt (a:as) n = elementAt as (n-1) 
 
+
+-- 4
+myLength :: [a] -> Int
+myLength [] = 0
+myLength (a:as) = 1 + myLength as
+
 -- Problem 11 ~ 20 : Lists, continued --
 -- Problem 21 ~ 28 : Lists again --
+
 
 -- 21
 insertAt :: a -> [a] -> Int -> [a]

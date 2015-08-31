@@ -42,6 +42,19 @@ myReverse xs = myReverse' [] xs
 isPalindrome:: Eq a => [a] -> Bool
 isPalindrome xs = (myReverse xs) == xs
 
+
+-- 7
+data NestedList a = Elem a | List [NestedList a]
+flatten :: NestedList a -> [a]
+flatten (Elem a) = [a]
+flatten (List as) = concatMap flatten as
+
+-- 8
+compress :: (Eq a) => [a] -> [a]
+compress [] = []
+compress (a:as) = a : compress (dropWhile (==a) as)
+
+
 -- Problem 11 ~ 20 : Lists, continued --
 -- Problem 21 ~ 28 : Lists again --
 

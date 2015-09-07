@@ -2,8 +2,10 @@ module Exercises where
 
 import Control.Monad
 import Data.Array.IO
-import System.Random
 import Data.Functor
+import System.Random
+import Data.List (group)
+
 
 -- 이 파일은 모임 때 함께 풀어나갈 파일입니다.
 
@@ -55,7 +57,51 @@ compress [] = []
 compress (a:as) = a : compress (dropWhile (==a) as)
 
 
+-- 9
+pack :: (Eq a) => [a] -> [[a]]
+pack = group -- span, takeWhile/dropWhile
+
+-- 10
+encode :: (Eq a) => [a] -> [(Int, a)]
+encode xs = let packed = pack xs
+            in map (\xs -> (length xs, head xs)) packed  
+
 -- Problem 11 ~ 20 : Lists, continued --
+data Enc a = Multiple Int a | Single a deriving Show
+
+-- 13
+encodeModified :: (Eq a) => [a] -> [Enc a]
+encodeModified = map f . encode
+                       where f (1, x) = Single x
+                             f (n, x) = Multiple n x
+
+-- 12
+decodeModified :: [Enc a] -> [a]
+decodeModified = concatMap f
+                    where f (Single a) = [a]
+                          f (Multiple n a) = replicate n a
+
+-- 13
+encodeDirect :: (Eq a) => [a] -> [Enc a]
+encodeDirect [] = []
+encodeDirect (x:xs) = toInc n : encodeDirect remainder
+                          where (n,remainder) = count xs 1
+                                toInc 1 = Single x
+                                toInc n = Multiple n x
+                                count [] n = (n, [])
+                                count all@(a:as) n = if a == x then count as (n+1) else (n, all)
+                   
+-- 14
+dupli :: [a] -> [a]
+dupli = concatMap f
+        where f a = [a,a]
+-- 15
+repli :: [a] -> Int -> [a]
+repli xs n = concatMap (replicate n) xs
+
+-- 16
+-- dropEvery :: [a] -> Int -> [a]
+
 -- Problem 21 ~ 28 : Lists again --
 
 

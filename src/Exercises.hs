@@ -166,7 +166,13 @@ diff_select n m = rndSelect [1..m] n
 rnd_permu = shuffle
 
 -- 26
-combinations n = filter (\x -> n == length x) . subsequences
+combinations :: Int -> [a] -> [[a]]
+combinations n = filter (\x -> length x == n) . subsequences
+-- or
+-- combinations 0 xs = [[]]
+-- combinations n [] = []
+-- combinations n (x:xs) = (map (x:) $ combinations (n-1) xs) ++
+--                         combinations n xs
 
 -- Problem 31 ~ 41 : Arithmetic --
 -- Problem 46 ~ 50 : Logic and codes --

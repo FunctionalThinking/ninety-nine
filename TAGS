@@ -1,0 +1,124 @@
+
+c:/Users/LG.admin/work/ninety-nine/tests\Spec.hs,0
+
+c:/Users/LG.admin/work/ninety-nine/tests\ExercisesSpec.hs,70
+module ExercisesSpec ExercisesSpec0,1
+spec spec6,7
+spec spec7,8
+
+c:/Users/LG.admin/work/ninety-nine/src\Main.hs,37
+module Main Main0,1
+main main2,3
+
+c:/Users/LG.admin/work/ninety-nine/src\Exercises.hs,1307
+module Exercises Exercises0,1
+myLast myLast14,15
+myLast myLast15,16
+myButLast myButLast19,20
+myButLast myButLast20,21
+elementAt elementAt25,26
+elementAt elementAt26,27
+myLength myLength31,32
+myLength myLength32,33
+myReverse myReverse37,38
+myReverse myReverse38,39
+isPalindrome:isPalindrome43,44
+isPalindrome isPalindrome44,45
+data NestedList NestedList48,49
+data NestedList a = Elem Elem48,49
+data NestedList a = Elem a | List List48,49
+flatten flatten49,50
+flatten flatten50,51
+compress compress54,55
+compress compress55,56
+pack pack60,61
+pack pack61,62
+encode encode64,65
+encode encode65,66
+data Enc Enc69,70
+data Enc a = Multiple Multiple69,70
+data Enc a = Multiple Int a | Single Single69,70
+encodeModified encodeModified72,73
+encodeModified encodeModified73,74
+decodeModified decodeModified78,79
+decodeModified decodeModified79,80
+encodeDirect encodeDirect84,85
+encodeDirect encodeDirect85,86
+dupli dupli94,95
+dupli dupli95,96
+repli repli98,99
+repli repli99,100
+insertAt insertAt108,109
+insertAt insertAt109,110
+range range115,116
+range range116,117
+rndSelect rndSelect119,120
+rndSelect rndSelect120,121
+shuffle shuffle122,123
+shuffle shuffle123,124
+diffSelect diffSelect136,137
+diffSelect diffSelect137,138
+
+c:/Users/LG.admin/work/ninety-nine/Setup.hs,15
+main main1,2
+
+c:/Users/LG.admin/work/ninety-nine/dist\dist-sandbox-32b454cd\setup\setup.hs,19
+import import0,1
+
+c:/Users/LG.admin/work/ninety-nine/dist\dist-sandbox-32b454cd\build\autogen\Paths_ninety_nine.hs,972
+module Paths_ninety_nine Paths_ninety_nine0,1
+catchIO catchIO11,12
+catchIO catchIO12,13
+version version14,15
+version version15,16
+bindir, libdir, datadir, libexecdir, sysconfdir sysconfdir16,17
+bindir, libdir, datadir, libexecdir,libexecdir16,17
+bindir, libdir, datadir,datadir16,17
+bindir, libdir,libdir16,17
+bindir,bindir16,17
+bindir bindir18,19
+libdir libdir19,20
+datadir datadir20,21
+libexecdir libexecdir21,22
+sysconfdir sysconfdir22,23
+getBinDir, getLibDir, getDataDir, getLibexecDir, getSysconfDir getSysconfDir24,25
+getBinDir, getLibDir, getDataDir, getLibexecDir,getLibexecDir24,25
+getBinDir, getLibDir, getDataDir,getDataDir24,25
+getBinDir, getLibDir,getLibDir24,25
+getBinDir,getBinDir24,25
+getBinDir getBinDir25,26
+getLibDir getLibDir26,27
+getDataDir getDataDir27,28
+getLibexecDir getLibexecDir28,29
+getSysconfDir getSysconfDir29,30
+getDataFileName getDataFileName31,32
+getDataFileName getDataFileName32,33
+
+c:/Users/LG.admin/work/ninety-nine/dist\build\autogen\Paths_ninety_nine.hs,972
+module Paths_ninety_nine Paths_ninety_nine0,1
+catchIO catchIO11,12
+catchIO catchIO12,13
+version version14,15
+version version15,16
+bindir, libdir, datadir, libexecdir, sysconfdir sysconfdir16,17
+bindir, libdir, datadir, libexecdir,libexecdir16,17
+bindir, libdir, datadir,datadir16,17
+bindir, libdir,libdir16,17
+bindir,bindir16,17
+bindir bindir18,19
+libdir libdir19,20
+datadir datadir20,21
+libexecdir libexecdir21,22
+sysconfdir sysconfdir22,23
+getBinDir, getLibDir, getDataDir, getLibexecDir, getSysconfDir getSysconfDir24,25
+getBinDir, getLibDir, getDataDir, getLibexecDir,getLibexecDir24,25
+getBinDir, getLibDir, getDataDir,getDataDir24,25
+getBinDir, getLibDir,getLibDir24,25
+getBinDir,getBinDir24,25
+getBinDir getBinDir25,26
+getLibDir getLibDir26,27
+getDataDir getDataDir27,28
+getLibexecDir getLibexecDir28,29
+getSysconfDir getSysconfDir29,30
+getDataFileName getDataFileName31,32
+getDataFileName getDataFileName32,33

@@ -3,8 +3,8 @@ module Exercises where
 import Control.Monad
 import Data.Array.IO
 import Data.Functor
-import System.Random
-import Data.List (group)
+import System.Random (randomRIO)
+import Data.List (group, subsequences)
 
 
 -- 이 파일은 모임 때 함께 풀어나갈 파일입니다.
@@ -22,10 +22,10 @@ myButLast (x1:x2:[]) = x1
 myButLast (x:xs) = myButLast xs
 
 
--- 3 
+-- 3
 elementAt :: [a] -> Int -> a
 elementAt (a:as) 0 = a
-elementAt (a:as) n = elementAt as (n-1) 
+elementAt (a:as) n = elementAt as (n-1)
 
 
 -- 4
@@ -64,7 +64,7 @@ pack = group -- span, takeWhile/dropWhile
 -- 10
 encode :: (Eq a) => [a] -> [(Int, a)]
 encode xs = let packed = pack xs
-            in map (\xs -> (length xs, head xs)) packed  
+            in map (\xs -> (length xs, head xs)) packed
 
 -- Problem 11 ~ 20 : Lists, continued --
 data Enc a = Multiple Int a | Single a deriving Show
@@ -90,7 +90,7 @@ encodeDirect (x:xs) = toInc n : encodeDirect remainder
                                 toInc n = Multiple n x
                                 count [] n = (n, [])
                                 count all@(a:as) n = if a == x then count as (n+1) else (n, all)
-                   
+
 -- 14
 dupli :: [a] -> [a]
 dupli = concatMap f
@@ -100,11 +100,35 @@ repli :: [a] -> Int -> [a]
 repli xs n = concatMap (replicate n) xs
 
 -- 16
--- dropEvery :: [a] -> Int -> [a]
+partition n [] = []
+partition n xs = let (h,t) = splitAt n xs
+                 in h : partition n t
+
+dropEvery :: [a] -> Int -> [a]
+dropEvery [] n = []
+dropEvery xs n = concatMap (take (n - 1)) $ partition n xs
+
+-- 17
+split :: [a] -> Int -> ([a],[a])
+split [] n = ([], [])
+split xs n = (take n xs, drop n xs)
+
+-- 18
+slice [] n m = []
+slice xs n m = drop (n-1) $ take m xs
+
+-- 19
+rotate :: [a] -> Int -> [a]
+rotate xs n = drop n' xs ++ take n' xs
+              where n' = mod n (length xs)
+
+-- 20
+removeAt :: [a] -> Int -> (a, [a])
+removeAt (x:xs) 1 = (x, xs)
+removeAt (x:xs) n = let (a,as) = removeAt xs (n-1)
+                    in (a, x:as)
 
 -- Problem 21 ~ 28 : Lists again --
-
-
 -- 21
 insertAt :: a -> [a] -> Int -> [a]
 insertAt a' as     1         = a':as
@@ -134,8 +158,15 @@ shuffle xs = do
     newArray :: Int -> [a] -> IO (IOArray Int a)
     newArray n xs' =  newListArray (1,n) xs'
 
-diffSelect :: Int -> Int -> IO [Int]
-diffSelect n m = rndSelect [1..m] n
+-- 24
+diff_select :: Int -> Int -> IO [Int]
+diff_select n m = rndSelect [1..m] n
+
+-- 25
+rnd_permu = shuffle
+
+-- 26
+combinations n = filter (\x -> n == length x) . subsequences
 
 -- Problem 31 ~ 41 : Arithmetic --
 -- Problem 46 ~ 50 : Logic and codes --

@@ -5,7 +5,7 @@ import Data.Array.IO
 import Data.Functor
 import System.Random (randomRIO)
 import Data.List (group, subsequences)
-
+import Control.Arrow ((&&&))
 
 -- 이 파일은 모임 때 함께 풀어나갈 파일입니다.
 
@@ -18,32 +18,25 @@ myLast (x:xs) = myLast xs
 
 -- 2
 myButLast :: [a] -> a
-myButLast (x1:x2:[]) = x1
+myButLast [x1,x2] = x1
 myButLast (x:xs) = myButLast xs
-
 
 -- 3
 elementAt :: [a] -> Int -> a
 elementAt (a:as) 0 = a
 elementAt (a:as) n = elementAt as (n-1)
 
-
 -- 4
 myLength :: [a] -> Int
-myLength [] = 0
-myLength (a:as) = 1 + myLength as
-
+myLength = foldr (\a x -> x + 1) 0
 
 -- 5
 myReverse :: [a] -> [a]
-myReverse xs = myReverse' [] xs
-               where myReverse' acc [] = acc
-                     myReverse' acc (a:as) = myReverse' (a:acc) as
+myReverse = foldl (flip (:)) []
 
 -- 6
 isPalindrome:: Eq a => [a] -> Bool
-isPalindrome xs = (myReverse xs) == xs
-
+isPalindrome xs = myReverse xs == xs
 
 -- 7
 data NestedList a = Elem a | List [NestedList a]
@@ -64,7 +57,7 @@ pack = group -- span, takeWhile/dropWhile
 -- 10
 encode :: (Eq a) => [a] -> [(Int, a)]
 encode xs = let packed = pack xs
-            in map (\xs -> (length xs, head xs)) packed
+            in map (length &&& head) packed
 
 -- Problem 11 ~ 20 : Lists, continued --
 data Enc a = Multiple Int a | Single a deriving Show
@@ -138,7 +131,7 @@ insertAt a' (a:as) n         = a:insertAt a' as (n-1)
 
 -- 22
 range :: (Enum a) => a -> a -> [a]
-range from to = enumFromTo from to
+range = enumFromTo
 
 -- 23
 rndSelect :: [a] -> Int -> IO [a]
@@ -156,14 +149,14 @@ shuffle xs = do
   where
     n = length xs
     newArray :: Int -> [a] -> IO (IOArray Int a)
-    newArray n xs' =  newListArray (1,n) xs'
+    newArray n =  newListArray (1, n)
 
 -- 24
-diff_select :: Int -> Int -> IO [Int]
-diff_select n m = rndSelect [1..m] n
+diffSelect :: Int -> Int -> IO [Int]
+diffSelect n m = rndSelect [1..m] n
 
 -- 25
-rnd_permu = shuffle
+rndPermu = shuffle
 
 -- 26
 combinations :: Int -> [a] -> [[a]]

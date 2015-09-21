@@ -3,7 +3,7 @@ module Exercises where
 import Control.Monad
 import Data.Array.IO
 import System.Random (randomRIO)
-import Data.List (group, subsequences)
+import Data.List (group, subsequences, (\\), sortOn)
 import Control.Arrow ((&&&))
 
 -- Problem 1 ~ 10 : Lists --
@@ -171,7 +171,44 @@ combinations n = filter (\x -> length x == n) . subsequences
 -- combinations n (x:xs) = (map (x:) $ combinations (n-1) xs) ++
 --                         combinations n xs
 
+
+-- 27
+groupN :: Eq a => [Int] -> [a] -> [[[a]]]
+groupN [] _     = [[]]
+groupN (n:ns) as = [ combi : sub |
+                       combi <- combinations n as ,
+                       let rest = as \\ combi,
+                       sub <- groupN ns rest]
+-- 28
+--a
+lsort :: [[a]] -> [[a]]
+lsort  = sortOn length
+
+freq :: Eq a => a -> [a] -> Int
+freq x xs = length $ filter (== x) xs
+
+--b sort by frequence of length
+lfsort :: [[a]] -> [[a]]
+lfsort xss = sortOn lengthFreq xss
+             where lengthFreq xs = freq (length xs) lengths
+                   lengths = map length xss
+
 -- Problem 31 ~ 41 : Arithmetic --
+-- 31
+isPrime:: Int -> Bool
+isPrime n = [1,n] == divisors
+            where divisors =
+                   filter (\d -> n `mod` d == 0) [1..n]
+
+--32
+myGCD :: Int -> Int -> Int
+myGCD a b = if a == 0 then b else if a < b then myGCD (b - a) a else myGCD (a-b) a
+
+
+-- 33
+coprime :: Int -> Int -> Bool
+coprime a b = 1 == myGCD a b
+
 -- Problem 46 ~ 50 : Logic and codes --
 -- Problem 54A ~ 60 : Binary trees --
 -- Problem 61 ~ 69 : Binary trees, continued --

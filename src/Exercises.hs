@@ -192,6 +192,15 @@ lfsort :: [[a]] -> [[a]]
 lfsort xss = sortOn lengthFreq xss
              where lengthFreq xs = freq (length xs) lengths
                    lengths = map length xss
+-- Birmjin's straight-forward & naive solution is below
+lfsortB:: Ord a => [[a]] -> [[a]]
+lfsortB = concat
+        . map (sort.concat)
+        . groupBy (\x y -> length x == length y)
+        . sortOn length
+        . groupBy (\x y -> length x == length y)
+        . sortOn length
+
 
 -- Problem 31 ~ 41 : Arithmetic --
 -- 31

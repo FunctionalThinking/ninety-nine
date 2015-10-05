@@ -192,15 +192,6 @@ lfsort :: [[a]] -> [[a]]
 lfsort xss = sortOn lengthFreq xss
              where lengthFreq xs = freq (length xs) lengths
                    lengths = map length xss
--- Birmjin's straight-forward & naive solution is below
-lfsortB:: Ord a => [[a]] -> [[a]]
-lfsortB = concat
-        . map (sort.concat)
-        . groupBy (\x y -> length x == length y)
-        . sortOn length
-        . groupBy (\x y -> length x == length y)
-        . sortOn length
-
 
 -- Problem 31 ~ 41 : Arithmetic --
 -- 31
@@ -211,12 +202,63 @@ isPrime n = [1,n] == divisors
 
 --32
 myGCD :: Int -> Int -> Int
-myGCD a b = if a == 0 then b else if a < b then myGCD (b - a) a else myGCD (a-b) a
-
+myGCD a b
+  | a == 0    = b
+  | a < b     = myGCD (b `mod` a) a
+  | otherwise = myGCD (a `mod` b) b
 
 -- 33
 coprime :: Int -> Int -> Bool
 coprime a b = 1 == myGCD a b
+
+-- 34
+totient :: Int -> Int
+totient m = length $ filter (coprime m) [1..m]
+
+-- 35
+primeFactors :: Int -> [Int]
+primeFactors 1 = []
+primeFactors n = f: primeFactors (n `quot` f)
+                 where f = head $ filter (\d -> n `mod` d == 0) [2..]
+
+-- 36
+primeFactorsMult :: Int -> [(Int, Int)]
+primeFactorsMult n = map swap $ encode $ primeFactors n
+                     where swap (a, b) = (b, a)
+
+-- 37
+totient' :: Int -> Int
+totient' = product . map f . primeFactorsMult
+             where f (p, m) = (p - 1) * p ^ (m - 1)
+
+-- 38
+{-
+*Exercises> :set +s
+*Exercises> totient 10090
+4032
+(0.08 secs, 0 bytes)
+*Exercises> totient' 10090
+4032
+(0.00 secs, 0 bytes)
+-}
+
+-- 39
+primeR :: Int -> Int -> [Int]
+primeR from to = filter isPrime [from .. to]
+
+-- 40
+goldbach :: Int -> (Int, Int)
+goldbach n
+     | odd n = error "Odd number!"
+     | otherwise = head $ filter (\(_, p') -> isPrime p') $ map (\p -> (p, n-p)) $ filter isPrime [1..n]
+
+-- 41
+goldbachList :: Int -> Int -> [(Int, Int)]
+goldbachList a b =
+  [goldbach n | n <- [(max 3 a)..b], even n]
+
+goldbachList' :: Int -> Int -> Int -> [(Int, Int)]
+goldbachList' a b lower = filter (\(l, u)-> l>lower && u>lower) $ goldbachList a b
 
 -- Problem 46 ~ 50 : Logic and codes --
 -- Problem 54A ~ 60 : Binary trees --

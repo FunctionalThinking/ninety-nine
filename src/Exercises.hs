@@ -261,6 +261,68 @@ goldbachList' :: Int -> Int -> Int -> [(Int, Int)]
 goldbachList' a b lower = filter (\(l, u)-> l>lower && u>lower) $ goldbachList a b
 
 -- Problem 46 ~ 50 : Logic and codes --
+
+-- 46
+(.:) :: (c -> d) -> (a -> b -> c) -> a -> b -> d
+(.:) = (.) (.) (.)
+
+infixl 3 `and'`
+infixl 2 `or'`
+infixl 1 `equ'`
+
+and' :: Bool -> Bool -> Bool
+and' = (&&)
+
+or' :: Bool -> Bool -> Bool
+or' = (||)
+
+nand' :: Bool -> Bool -> Bool
+nand' = not .: and'
+
+nor' :: Bool -> Bool -> Bool
+nor' = not .: or'
+
+xor' :: Bool -> Bool -> Bool
+xor' = (/=)
+
+impl' :: Bool -> Bool -> Bool
+impl' a b = not a || b
+
+equ' :: Bool -> Bool -> Bool
+equ' = (==)
+
+table' :: (Bool -> Bool -> Bool) -> [(Bool, Bool, Bool)]
+table' f = [(a, b, f a b) | a <- [True,False], b <- [True, False]]
+
+table :: (Bool -> Bool -> Bool) -> IO()
+table f = putStrLn $ unlines $ map format (table' f)
+          where format (a,b,r) = unwords $ map show [a, b, r]
+
+-- 48
+makeInput :: Int -> [[Bool]]
+makeInput 0 = [[]]
+makeInput n = [ b:r | b <- [True,False], r <- rest]
+              where rest = makeInput (n-1)
+tableN':: Int -> ([Bool] -> Bool) -> [([Bool], Bool)]
+tableN' n f = [(input, f input)| input <- makeInput n]
+
+tableN :: Int -> ([Bool] -> Bool) -> IO()
+tableN n f = putStrLn $ unlines $ map format $ tableN' n f
+             where format (input,result) = unwords $ map show $ input ++ [result]
+
+-- 49
+gray :: Int -> [String]
+gray 0 = [[]]
+gray n = [h:t | h <-"01", t <- rest]
+         where rest = gray (n-1)
+
+-- 50
+
+huffman :: [(Char, Int)] -> [(Char, String)]
+huffman freqs =  [ hc c | (c,_) <- freqs ]
+                  where hc c = undefined
+                        tree = until singleton mergeTwo initTree
+
 -- Problem 54A ~ 60 : Binary trees --
 -- Problem 61 ~ 69 : Binary trees, continued --
 -- Problem 70B ~ 73 : Multiway trees --

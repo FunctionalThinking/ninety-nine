@@ -317,11 +317,43 @@ gray n = [h:t | h <-"01", t <- rest]
          where rest = gray (n-1)
 
 -- 50
-
+--
 huffman :: [(Char, Int)] -> [(Char, String)]
-huffman freqs =  [ hc c | (c,_) <- freqs ]
-                  where hc c = undefined
-                        tree = until singleton mergeTwo initTree
+huffman freqs = let tree = hTree freqs
+                in sortOn fst $ hFlatten tree
+
+hFlatten :: HTree -> [(Char, String)]
+hFlatten = hFlatten' ""
+
+hFlatten' :: String -> HTree -> [(Char, String)]
+hFlatten' path (HLeaf (c,_)) = [(c, reverse path)]
+hFlatten' path (HBranch left _ right) = hFlatten' ('0':path) left
+                                    ++ hFlatten' ('1':path) right
+
+data HTree = HLeaf (Char,Int) | HBranch HTree Int HTree deriving (Show)
+
+hTree :: [(Char, Int)] -> HTree
+hTree freqs = head $ until singleton mergeTwo (map HLeaf freqs)
+
+mergeTwo :: [HTree] -> [HTree]
+mergeTwo treeList =  let t1:t2:rest = sortTrees treeList
+                     in merge t1 t2:rest
+
+merge :: HTree -> HTree -> HTree
+merge t1 t2 = let v1 = hValue t1
+                  v2 = hValue t2
+              in HBranch t1 (v1 + v2) t2
+
+sortTrees :: [HTree] -> [HTree]
+sortTrees = sortOn hValue
+
+hValue :: HTree -> Int
+hValue (HLeaf (_,n)) = n
+hValue (HBranch _ n _) = n
+
+singleton :: [a] -> Bool
+singleton [_] = True
+singleton _ = False
 
 -- Problem 54A ~ 60 : Binary trees --
 -- Problem 61 ~ 69 : Binary trees, continued --

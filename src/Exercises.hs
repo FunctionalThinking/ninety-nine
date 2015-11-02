@@ -5,7 +5,8 @@ import Data.Array.IO
 import System.Random (randomRIO)
 import Data.List (group, subsequences, (\\), sortOn)
 import Control.Arrow ((&&&))
-
+import Control.Monad
+import Control.Applicative
 -- Problem 1 ~ 10 : Lists --
 
 -- 1
@@ -356,6 +357,42 @@ singleton [_] = True
 singleton _ = False
 
 -- Problem 54A ~ 60 : Binary trees --
+data Tree a = Empty | Branch a (Tree a) (Tree a)
+              deriving (Show, Eq)
+
+-- 55 completely balanced binary tree
+cbalTree :: Int -> [Tree Char]
+cbalTree n
+  | n == 0 = [Empty]
+  | odd n = Branch 'x' <$> cbalTree (n `div` 2) <*> cbalTree (n `div` 2)
+  | otherwise = Branch 'x' <$> cbalTree (n `div` 2) <*> cbalTree ((n `div` 2) - 1)
+                <|> Branch 'x' <$> cbalTree ((n `div` 2) - 1) <*> cbalTree (n `div` 2)
+
+-- 56
+symmetric :: Tree a -> Bool
+symmetric Empty = True
+symmetric (Branch _ a b) = mirror a b
+
+mirror :: Tree a -> Tree b -> Bool
+mirror Empty Empty = True
+mirror (Branch _ left1 right1) (Branch _ left2 right2) = mirror left1 right2 && mirror right1 left2
+mirror _ _ = False
+
+-- 57 Binary Search tree
+construct :: (Ord a) => [a] -> Tree a
+construct = foldl insert Empty
+
+insert :: (Ord a) => Tree a -> a -> Tree a
+insert Empty a = Branch a Empty Empty
+insert (tree@(Branch root left right)) a
+  | a < root = Branch root (insert left a) right
+  | a > root = Branch root left (insert right a)
+  | otherwise = tree
+
+-- 58
+symCbalTrees :: Int -> [Tree Char]
+symCbalTrees = filter symmetric . cbalTree
+
 -- Problem 61 ~ 69 : Binary trees, continued --
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --

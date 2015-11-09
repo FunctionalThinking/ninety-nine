@@ -393,7 +393,69 @@ insert (tree@(Branch root left right)) a
 symCbalTrees :: Int -> [Tree Char]
 symCbalTrees = filter symmetric . cbalTree
 
+-- 59 Height Balanced Binary Trees
+{-
+> take 4 $ hbalTree 'x' 3
+[Branch 'x' (Branch 'x' Empty Empty) (Branch 'x' Empty (Branch 'x' Empty Empty)),
+ Branch 'x' (Branch 'x' Empty Empty) (Branch 'x' (Branch 'x' Empty Empty) Empty),
+ Branch 'x' (Branch 'x' Empty Empty) (Branch 'x' (Branch 'x' Empty Empty) (Branch 'x' Empty Empty)),
+ Branch 'x' (Branch 'x' Empty (Branch 'x' Empty Empty)) (Branch 'x' Empty Empty)]
+
+    x                 x                  x                  x
+  x   x             x   x              x   x              x   x
+        x              x                  x x              x
+-}
+
+hbalTree :: a -> Int -> [Tree a]
+hbalTree _ 0 = [Empty]
+hbalTree a 1 = [Branch a Empty Empty]
+hbalTree a n =  Branch a <$> n2 <*> n1
+            <|> Branch a <$> n1 <*> n2
+            <|> Branch a <$> n1 <*> n1
+            where n2 = hbalTree a (n-2)
+                  n1 = hbalTree a (n-1)
+
+-- 60 Height Balanced Binary Trees with a Given Number of Nodes
+{-
+> length $ hbalTreeNodes 'x' 15
+1553
+-}
+minNodes :: Int -> Int
+minNodes 0 = 0
+minNodes 1 = 1
+minNodes h = minNodes (h-1) + minNodes (h-2) + 1
+
+maxHeight :: Int -> Int
+maxHeight n = height - 1
+              where height = length base
+                    base = takeWhile (<= n) $ map minNodes [0..]
+
+hbalTreeNodes :: a -> Int -> [Tree a]
+hbalTreeNodes _ 0 = [Empty]
+hbalTreeNodes a 1 = [Branch a Empty Empty]
+hbalTreeNodes a n = [ Branch a left right | leftN <- [n2..(n1-1)]
+                                , let rightN = n - 1 - leftN
+                                , rightN >= n1
+                                , left <- hbalTreeNodes a leftN
+                                , right <- hbalTreeNodes a rightN]
+             ++ [ Branch a left right | leftN <- [n1..(n0-1)]
+                                             , let rightN = n - 1 - leftN
+                                             , rightN >= n2
+                          , left <- hbalTreeNodes a leftN
+                          , right <- hbalTreeNodes a rightN]
+            ++ [ Branch a left right | leftN <- [n1..(n0-1)]
+                                            , let rightN = n - 1 - leftN
+                                            , rightN >= n1
+                         , left <- hbalTreeNodes a leftN
+                         , right <- hbalTreeNodes a rightN]
+  where h = maxHeight n
+        n2 = minNodes (h - 2)
+        n1 = minNodes (h - 1)
+        n0 = minNodes h
+
+
 -- Problem 61 ~ 69 : Binary trees, continued --
+
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --
 -- Problem 90 ~ 94 : Miscellaneous problems --

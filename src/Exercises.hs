@@ -430,29 +430,36 @@ maxHeight n = height - 1
               where height = length base
                     base = takeWhile (<= n) $ map minNodes [0..]
 
+
+minHeight :: Int -> Int
+minHeight n = ceiling $ logBase 2 (fromIntegral (n + 1))
+
+minMaxHeight :: Int -> (Int, Int)
+minMaxHeight n = (minHeight n , maxHeight n)
+
+validBalance :: Int -> Int -> Bool
+validBalance left right = min maxL maxR - max minL minR >= -1
+    where (minL, maxL) = minMaxHeight left
+          (minR, maxR) = minMaxHeight right
+
+
 hbalTreeNodes :: a -> Int -> [Tree a]
 hbalTreeNodes _ 0 = [Empty]
 hbalTreeNodes a 1 = [Branch a Empty Empty]
-hbalTreeNodes a n = [ Branch a left right | leftN <- [n2..(n1-1)]
-                                , let rightN = n - 1 - leftN
-                                , rightN >= n1
-                                , left <- hbalTreeNodes a leftN
-                                , right <- hbalTreeNodes a rightN]
-             ++ [ Branch a left right | leftN <- [n1..(n0-1)]
-                                             , let rightN = n - 1 - leftN
-                                             , rightN >= n2
-                          , left <- hbalTreeNodes a leftN
-                          , right <- hbalTreeNodes a rightN]
-            ++ [ Branch a left right | leftN <- [n1..(n0-1)]
-                                            , let rightN = n - 1 - leftN
-                                            , rightN >= n1
-                         , left <- hbalTreeNodes a leftN
-                         , right <- hbalTreeNodes a rightN]
-  where h = maxHeight n
-        n2 = minNodes (h - 2)
-        n1 = minNodes (h - 1)
-        n0 = minNodes h
+hbalTreeNodes a n = filter hBalance
+                    [Branch a left right| leftN <- [0..n-1]
+                      , let rightN = n - 1 - leftN
+                      , validBalance leftN rightN
+                      , left <- hbalTreeNodes a leftN
+                      , right <- hbalTreeNodes a rightN]
 
+hBalance Empty = True
+hBalance (Branch _ left right) = hBalance left && hBalance right && abs(leftH - rightH) <= 1
+  where leftH = height left
+        rightH = height right
+
+height Empty = 0
+height (Branch _ left right) = 1 + max (height left) (height right)
 
 -- Problem 61 ~ 69 : Binary trees, continued --
 

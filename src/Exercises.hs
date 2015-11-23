@@ -463,6 +463,81 @@ height (Branch _ left right) = 1 + max (height left) (height right)
 
 -- Problem 61 ~ 69 : Binary trees, continued --
 
+tree4 = Branch 1 (Branch 2 Empty (Branch 4 Empty Empty))
+                 (Branch 2 Empty Empty)
+
+-- 61 count leaves
+-- > countLeaves tree4
+-- 2
+countLeaves :: Tree a -> Int
+countLeaves Empty = 0
+countLeaves (Branch _ Empty Empty) = 1
+countLeaves (Branch _ left right) = countLeaves left + countLeaves right
+
+-- 61A collect leaves
+-- > leaves tree4
+-- [4,2]
+leaves :: Tree a -> [a]
+leaves Empty = []
+leaves (Branch a Empty Empty) = [a]
+leaves (Branch _ left right) = leaves left ++ leaves right
+
+-- 62 Collect the internal nodes of a binary tree in a list
+-- Prelude>internals tree4
+-- Prelude>[1,2]
+internals :: Tree a -> [a]
+internals Empty = []
+internals (Branch _ Empty Empty) = []
+internals (Branch a left right) = a : internals left ++ internals right
+
+-- 62B
+atLevel :: Tree a -> Int -> [a]
+atLevel Empty _ = []
+atLevel (Branch a _ _) 1 = [a]
+atLevel (Branch _ left right) n = atLevel left (n-1) ++ atLevel right (n-1)
+
+-- 63 Construct a complete binary tree
+-- A complete binary tree with height H is defined as follows:
+-- The levels 1,2,3,...,H-1 contain the maxim
+completeBinaryTree :: Int -> Tree Char
+completeBinaryTree n = go 1
+  where
+    go index = if index > 0 &&  index <= n then Branch 'X' (go (index*2)) (go (index*2 + 1)) else Empty
+
+
+tree64 = Branch 'n'
+                (Branch 'k'
+                        (Branch 'c'
+                                (Branch 'a' Empty Empty)
+                                (Branch 'h'
+                                        (Branch 'g'
+                                                (Branch 'e' Empty Empty)
+                                                Empty
+                                        )
+                                        Empty
+                                )
+                        )
+                        (Branch 'm' Empty Empty)
+                )
+                (Branch 'u'
+                        (Branch 'p'
+                                Empty
+                                (Branch 's'
+                                        (Branch 'q' Empty Empty)
+                                        Empty
+                                )
+                        )
+                        Empty
+                )
+
+-- 64
+layout :: Tree a -> Tree (a, (Int, Int))
+layout t = fst $ sublayout t 1 0
+           where sublayout Empty h c = (Empty, 0)
+                 sublayout (Branch a left right) h c = (Branch (a, (c+leftcount+1, h)) lefttree righttree, leftcount + rightcount + 1)
+                                                     where (lefttree, leftcount) = sublayout left (h+1) c
+                                                           (righttree, rightcount) = sublayout right (h+1) (c+leftcount+1)
+
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --
 -- Problem 90 ~ 94 : Miscellaneous problems --

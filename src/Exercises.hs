@@ -538,6 +538,48 @@ layout t = fst $ sublayout t 1 0
                                                      where (lefttree, leftcount) = sublayout left (h+1) c
                                                            (righttree, rightcount) = sublayout right (h+1) (c+leftcount+1)
 
+
+-- 65 layout tree
+tree65 = Branch 'n'
+                (Branch 'k'
+                        (Branch 'c'
+                                (Branch 'a' Empty Empty)
+                                (Branch 'e'
+                                        (Branch 'd' Empty Empty)
+                                        (Branch 'g' Empty Empty)
+                                )
+                        )
+                        (Branch 'm' Empty Empty)
+                )
+                (Branch 'u'
+                        (Branch 'p'
+                                Empty
+                                (Branch 'q' Empty Empty)
+                        )
+                        Empty
+                )
+
+layout65 :: Tree a -> Tree (a, (Int, Int))
+layout65 Empty = Empty
+layout65 tree = translateX offset tree'
+  where offset = let (_, (x,_)) = leftmost tree' in (1 - x)
+        h = height tree
+        tree' = sublayout tree 0 1
+        sublayout :: Tree a -> Int -> Int -> Tree (a, (Int, Int))
+        sublayout Empty _ _ = Empty
+        sublayout (Branch a left right) x y = Branch (a, (x,y)) (sublayout left (x-armlength) (y+1)) (sublayout right (x+armlength) (y+1))
+          where armlength = 2 ^ (h - y - 1)
+        translateX :: Int -> Tree (a, (Int, Int)) -> Tree (a, (Int, Int))
+        translateX x Empty = Empty
+        translateX x (Branch (a,(x0,y)) left right) = Branch (a,(x0+x,y)) (translateX x left) (translateX x right)
+        leftmost :: Tree a -> a
+        leftmost (Branch a Empty _) = a
+        leftmost (Branch a left _) = leftmost left
+        leftmost Empty = error "No leftmost"
+
+layout66:: Tree a -> Tree (a, (Int, Int))
+layout66 = undefined
+
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --
 -- Problem 90 ~ 94 : Miscellaneous problems --

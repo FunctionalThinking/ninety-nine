@@ -561,24 +561,66 @@ tree65 = Branch 'n'
 
 layout65 :: Tree a -> Tree (a, (Int, Int))
 layout65 Empty = Empty
-layout65 tree = translateX offset tree'
-  where offset = let (_, (x,_)) = leftmost tree' in (1 - x)
-        h = height tree
-        tree' = sublayout tree 0 1
+layout65 tree = fitLeft $ sublayout tree 0 1
+  where h = height tree
         sublayout :: Tree a -> Int -> Int -> Tree (a, (Int, Int))
         sublayout Empty _ _ = Empty
         sublayout (Branch a left right) x y = Branch (a, (x,y)) (sublayout left (x-armlength) (y+1)) (sublayout right (x+armlength) (y+1))
           where armlength = 2 ^ (h - y - 1)
-        translateX :: Int -> Tree (a, (Int, Int)) -> Tree (a, (Int, Int))
-        translateX x Empty = Empty
-        translateX x (Branch (a,(x0,y)) left right) = Branch (a,(x0+x,y)) (translateX x left) (translateX x right)
-        leftmost :: Tree a -> a
-        leftmost (Branch a Empty _) = a
-        leftmost (Branch a left _) = leftmost left
-        leftmost Empty = error "No leftmost"
+
+translateX :: Int -> Tree (a, (Int, Int)) -> Tree (a, (Int, Int))
+translateX _ Empty = Empty
+translateX x (Branch (a,(x0,y)) left right) = Branch (a,(x0+x,y)) (translateX x left) (translateX x right)
+
+leftmost :: Tree a -> a
+leftmost (Branch a Empty _) = a
+leftmost (Branch _ left _) = leftmost left
+leftmost Empty = error "No leftmost"
+
+fitLeft :: Tree (a, (Int,Int)) -> Tree (a, (Int, Int))
+fitLeft Empty = Empty
+fitLeft tree = let (_, (x,_)) = leftmost tree in translateX (1-x) tree
 
 layout66:: Tree a -> Tree (a, (Int, Int))
-layout66 = undefined
+layout66 tree = fitLeft $ layoutTree $ makeSymmetric $ compactLayout tree
+
+data TreeLayout a = EmptyL | BranchL a (TreeLayout a) (TreeLayout a) Int deriving (Show)
+
+layoutTree :: TreeLayout a -> Tree (a, (Int, Int))
+layoutTree treeLayout = sub treeLayout (0, 1)
+  where sub EmptyL _ = Empty
+        sub (BranchL a left right arm) (x,y) = Branch (a, (x,y)) (sub left (x-arm, y+1)) (sub right (x+arm, y+1))
+
+makeSymmetric :: TreeLayout a -> TreeLayout a
+makeSymmetric treeLayout = setArmLengths treeLayout (armLengths treeLayout)
+  where armLengths EmptyL = []
+        armLengths (BranchL _ left right arm) = arm : zipWith max (armLengths left) (armLengths right)
+        setArmLengths EmptyL _ = EmptyL
+        setArmLengths treeL [] = treeL
+        setArmLengths (BranchL a left right _) (arm:rest)= BranchL a (setArmLengths left rest) (setArmLengths right rest) arm
+
+compactLayout :: Tree a -> TreeLayout a
+compactLayout Empty = EmptyL
+compactLayout (Branch a left right) = head $ filter okay $ map (BranchL a leftLayout rightLayout) [1..]
+  where leftLayout = compactLayout left
+        rightLayout = compactLayout right
+
+okay :: TreeLayout a -> Bool
+okay EmptyL = True
+okay (BranchL _ left right arm) = all (> (-2*arm)) $ zipWith (-) (map minimum (getXs right)) (map maximum (getXs left))
+
+getXs :: TreeLayout a -> [[Int]]
+getXs treeL = map (map getX) $ levels (layoutTree treeL)
+  where getX (_,(x,_)) = x
+
+levels :: Tree a -> [[a]]
+levels Empty = []
+levels (Branch a left right) = [a] : zipAppend (levels left) (levels right)
+
+zipAppend :: (Monoid a) => [a] -> [a] -> [a]
+zipAppend (a:as) (b:bs) = mappend a b : zipAppend as bs
+zipAppend as [] = as
+zipAppend [] bs = bs
 
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --

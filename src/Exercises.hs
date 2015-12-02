@@ -1,11 +1,13 @@
+{-# LANGUAGE TupleSections #-}
+
 module Exercises where
 
 import Control.Monad
 import Data.Array.IO
+import Data.List (intersperse)
 import System.Random (randomRIO)
 import Data.List (group, subsequences, (\\), sortOn)
 import Control.Arrow ((&&&))
-import Control.Monad
 import Control.Applicative
 -- Problem 1 ~ 10 : Lists --
 
@@ -561,16 +563,13 @@ tree65 = Branch 'n'
 
 layout65 :: Tree a -> Tree (a, (Int, Int))
 layout65 Empty = Empty
-layout65 tree = fitLeft $ sublayout tree 0 1
+layout65 tree = fitLeft $ layoutTree $ setArmLengths armLengths $ fmap (,1) tree
   where h = height tree
-        sublayout :: Tree a -> Int -> Int -> Tree (a, (Int, Int))
-        sublayout Empty _ _ = Empty
-        sublayout (Branch a left right) x y = Branch (a, (x,y)) (sublayout left (x-armlength) (y+1)) (sublayout right (x+armlength) (y+1))
-          where armlength = 2 ^ (h - y - 1)
+        armLengths = reverse $ take (h-1) $ iterate (*2) 1
 
-translateX :: Int -> Tree (a, (Int, Int)) -> Tree (a, (Int, Int))
-translateX _ Empty = Empty
-translateX x (Branch (a,(x0,y)) left right) = Branch (a,(x0+x,y)) (translateX x left) (translateX x right)
+instance Functor Tree where
+  fmap _ Empty = Empty
+  fmap f (Branch a left right) = Branch (f a) (fmap f left) (fmap f right)
 
 leftmost :: Tree a -> a
 leftmost (Branch a Empty _) = a
@@ -579,39 +578,46 @@ leftmost Empty = error "No leftmost"
 
 fitLeft :: Tree (a, (Int,Int)) -> Tree (a, (Int, Int))
 fitLeft Empty = Empty
-fitLeft tree = let (_, (x,_)) = leftmost tree in translateX (1-x) tree
+fitLeft tree = let x = getX (leftmost tree) in fmap (translateX (1-x)) tree
+
+-- 66 compact symmetric layout
 
 layout66:: Tree a -> Tree (a, (Int, Int))
 layout66 tree = fitLeft $ layoutTree $ makeSymmetric $ compactLayout tree
 
-data TreeLayout a = EmptyL | BranchL a (TreeLayout a) (TreeLayout a) Int deriving (Show)
-
-layoutTree :: TreeLayout a -> Tree (a, (Int, Int))
+layoutTree :: Tree (a,Int) -> Tree (a, (Int, Int))
 layoutTree treeLayout = sub treeLayout (0, 1)
-  where sub EmptyL _ = Empty
-        sub (BranchL a left right arm) (x,y) = Branch (a, (x,y)) (sub left (x-arm, y+1)) (sub right (x+arm, y+1))
+  where sub Empty _ = Empty
+        sub (Branch (a,arm) left right) (x,y) = Branch (a, (x,y)) (sub left (x-arm, y+1)) (sub right (x+arm, y+1))
 
-makeSymmetric :: TreeLayout a -> TreeLayout a
-makeSymmetric treeLayout = setArmLengths treeLayout (armLengths treeLayout)
-  where armLengths EmptyL = []
-        armLengths (BranchL _ left right arm) = arm : zipWith max (armLengths left) (armLengths right)
-        setArmLengths EmptyL _ = EmptyL
-        setArmLengths treeL [] = treeL
-        setArmLengths (BranchL a left right _) (arm:rest)= BranchL a (setArmLengths left rest) (setArmLengths right rest) arm
+makeSymmetric :: Tree (a,Int) -> Tree (a,Int)
+makeSymmetric tree = setArmLengths (armLengths tree) tree
+  where armLengths Empty = []
+        armLengths (Branch (_,arm) left right) = arm : zipWith max (armLengths left) (armLengths right)
 
-compactLayout :: Tree a -> TreeLayout a
-compactLayout Empty = EmptyL
-compactLayout (Branch a left right) = head $ filter okay $ map (BranchL a leftLayout rightLayout) [1..]
+setArmLengths :: [Int] -> Tree (a,Int) -> Tree (a,Int)
+setArmLengths _ Empty = Empty
+setArmLengths [] tree = tree
+setArmLengths (arm:rest) (Branch (a,_) left right) = Branch (a,arm) (setArmLengths rest left) (setArmLengths rest right)
+
+compactLayout :: Tree a -> Tree (a,Int)
+compactLayout Empty = Empty
+compactLayout (Branch a left right) = Branch (a,arm) leftLayout rightLayout
   where leftLayout = compactLayout left
         rightLayout = compactLayout right
+        leftXs = map maximum (getXs $ layoutTree leftLayout)
+        rightXs = map minimum (getXs $ layoutTree rightLayout)
+        minDiff = foldl min 0 $ zipWith (-) rightXs leftXs
+        arm = head $ filter (\n -> minDiff + 2*n > 0) [1..]
 
-okay :: TreeLayout a -> Bool
-okay EmptyL = True
-okay (BranchL _ left right arm) = all (> (-2*arm)) $ zipWith (-) (map minimum (getXs right)) (map maximum (getXs left))
+getXs :: Tree (a,(Int,Int)) -> [[Int]]
+getXs treeL = map (map getX) $ levels treeL
 
-getXs :: TreeLayout a -> [[Int]]
-getXs treeL = map (map getX) $ levels (layoutTree treeL)
-  where getX (_,(x,_)) = x
+getX :: (a,(Int,Int)) -> Int
+getX (_,(x,_)) = x
+
+translateX :: Int -> (a, (Int,Int)) -> (a, (Int,Int))
+translateX x0 (a,(x,y)) = (a,(x+x0,y))
 
 levels :: Tree a -> [[a]]
 levels Empty = []
@@ -622,6 +628,16 @@ zipAppend (a:as) (b:bs) = mappend a b : zipAppend as bs
 zipAppend as [] = as
 zipAppend [] bs = bs
 
+printTree :: (Show a) => Tree a -> (Tree a -> Tree (a,(Int,Int))) -> String
+printTree tree layout' = unlines $ intersperse "" lines'
+  where treeL = layout' tree
+        ls = levels treeL
+        lines' = map (foldl format "") ls
+        format prev (a,(x,_)) = prev ++ space ++ a'
+          where space = replicate n ' '
+                a' = show a
+                n = max 0 $ (3*x) - x'
+                x' = length prev
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --
 -- Problem 90 ~ 94 : Miscellaneous problems --

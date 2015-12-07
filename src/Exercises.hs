@@ -623,6 +623,11 @@ zipAppend (a:as) [] = map (`mappend` mempty) (a:as)
 zipAppend [] (b:bs) = map (`mappend` mempty) (b:bs)
 zipAppend [] [] = []
 
+-- 67A
+stringToTree:: String -> Maybe (Tree Char)
+-- "x(y,a(,b))" --> Branch 'x' (Branch 'y' Empty Empty) (Branch 'a' Empty (Branch 'b' Empty Empty))
+stringToTree = undefined
+
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --
 -- Problem 90 ~ 94 : Miscellaneous problems --

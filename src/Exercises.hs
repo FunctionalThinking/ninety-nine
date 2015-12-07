@@ -561,24 +561,67 @@ tree65 = Branch 'n'
 
 layout65 :: Tree a -> Tree (a, (Int, Int))
 layout65 Empty = Empty
-layout65 tree = translateX offset tree'
-  where offset = let (_, (x,_)) = leftmost tree' in (1 - x)
-        h = height tree
+layout65 tree = fitLeft tree'
+  where h = height tree
         tree' = sublayout tree 0 1
         sublayout :: Tree a -> Int -> Int -> Tree (a, (Int, Int))
         sublayout Empty _ _ = Empty
         sublayout (Branch a left right) x y = Branch (a, (x,y)) (sublayout left (x-armlength) (y+1)) (sublayout right (x+armlength) (y+1))
           where armlength = 2 ^ (h - y - 1)
-        translateX :: Int -> Tree (a, (Int, Int)) -> Tree (a, (Int, Int))
-        translateX x Empty = Empty
-        translateX x (Branch (a,(x0,y)) left right) = Branch (a,(x0+x,y)) (translateX x left) (translateX x right)
-        leftmost :: Tree a -> a
-        leftmost (Branch a Empty _) = a
-        leftmost (Branch a left _) = leftmost left
-        leftmost Empty = error "No leftmost"
+
+translateX :: Int -> Tree (a, (Int, Int)) -> Tree (a, (Int, Int))
+translateX _ Empty = Empty
+translateX x (Branch (a,(x0,y)) left right) = Branch (a,(x0+x,y)) (translateX x left) (translateX x right)
+
+leftmost :: Tree a -> a
+leftmost (Branch a Empty _) = a
+leftmost (Branch _ left _) = leftmost left
+leftmost Empty = error "No leftmost"
+
+fitLeft :: Tree (a,(Int,Int)) -> Tree (a,(Int,Int))
+fitLeft tree = translateX offset tree
+  where offset = let (_, (x,_)) = leftmost tree in (1 - x)
 
 layout66:: Tree a -> Tree (a, (Int, Int))
-layout66 = undefined
+layout66 tree = fitLeft $ layoutTree $ makeSymmetric $ compactLayout tree
+
+compactLayout :: Tree a -> Tree (a, Int)
+compactLayout Empty = Empty
+compactLayout (Branch a left right) = Branch (a, armLength) left' right'
+  where left' = compactLayout left
+        right' = compactLayout right
+        minDiff = minimum $ 0:zipWith (-) (getMinXs (layoutTree right')) (getMaxXs (layoutTree left'))     -- (0,1)
+        armLength = head $ filter (\l -> l * 2 + minDiff > 0) [1..]
+        getMinXs :: Tree (a, (Int, Int)) -> [Int]
+        getMinXs tree = map (minimum . map getX) $ levels tree
+        getMaxXs :: Tree (a, (Int, Int)) -> [Int]
+        getMaxXs tree = map (maximum . map getX) $ levels tree
+        getX (_, (x, _)) = x
+
+makeSymmetric :: Tree (a, Int) -> Tree (a, Int)
+makeSymmetric tree = setArmLengths tree maxArmLengths
+  where maxArmLengths = map (maximum . map getArmLength) $ levels tree
+        setArmLengths Empty _ = Empty
+        setArmLengths (Branch (a,_) left right) (armlength:rest) =
+            Branch (a,armlength) (setArmLengths left rest) (setArmLengths right rest)
+        setArmLengths branch [] = branch
+        getArmLength (_, armlength) = armlength
+
+layoutTree :: Tree (a, Int) -> Tree (a, (Int, Int))
+layoutTree tree = sub tree (0,1)
+    where sub Empty _ = Empty
+          sub (Branch (a, armlength) left right) (x,y) =
+            Branch (a,(x,y)) (sub left (x-armlength,y+1)) (sub right (x+armlength,y+1))
+
+levels :: Tree a -> [[a]]
+levels Empty = []
+levels (Branch a left right) = [a] : zipAppend (levels left) (levels right)
+
+zipAppend :: Monoid m => [m] -> [m] -> [m]
+zipAppend (a:as) (b:bs) = mappend a b : zipAppend as bs
+zipAppend (a:as) [] = map (`mappend` mempty) (a:as)
+zipAppend [] (b:bs) = map (`mappend` mempty) (b:bs)
+zipAppend [] [] = []
 
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --

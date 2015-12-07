@@ -4,9 +4,12 @@ import Control.Monad
 import Data.Array.IO
 import System.Random (randomRIO)
 import Data.List (group, subsequences, (\\), sortOn)
+import Data.Char (isLetter)
+import Data.Maybe
 import Control.Arrow ((&&&))
-import Control.Monad
 import Control.Applicative
+import Text.ParserCombinators.ReadP
+
 -- Problem 1 ~ 10 : Lists --
 
 -- 1
@@ -624,9 +627,30 @@ zipAppend [] (b:bs) = map (`mappend` mempty) (b:bs)
 zipAppend [] [] = []
 
 -- 67A
-stringToTree:: String -> Maybe (Tree Char)
 -- "x(y,a(,b))" --> Branch 'x' (Branch 'y' Empty Empty) (Branch 'a' Empty (Branch 'b' Empty Empty))
-stringToTree = undefined
+
+stringToTree:: String -> Maybe (Tree Char)
+stringToTree input = listToMaybe [tree | (tree, "") <- readP_to_S treeP input]
+
+treeP :: ReadP (Tree Char)
+treeP = Branch <$> letterP <* char '(' <*> treeP <* char ',' <*> treeP <* char ')'
+  <|> Branch <$> letterP <*> return Empty <*> return Empty
+  <|> return Empty
+
+letterP :: ReadP Char
+letterP = satisfy isLetter
+
+treeToString:: Tree Char -> String
+treeToString tree = treeToString' tree ""
+treeToString' Empty = id
+treeToString' (Branch a Empty Empty) = showChar a
+treeToString' (Branch a left right) = do
+  showChar a
+  showChar '('
+  treeToString' left
+  showChar ','
+  treeToString' right
+  showChar ')'
 
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --

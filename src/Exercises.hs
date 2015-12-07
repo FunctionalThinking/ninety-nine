@@ -5,8 +5,9 @@ import Data.Array.IO
 import System.Random (randomRIO)
 import Data.List (group, subsequences, (\\), sortOn)
 import Control.Arrow ((&&&))
-import Control.Monad
 import Control.Applicative
+import Text.Parsec hiding (Empty, (<|>))
+
 -- Problem 1 ~ 10 : Lists --
 
 -- 1
@@ -624,9 +625,14 @@ zipAppend [] (b:bs) = map (`mappend` mempty) (b:bs)
 zipAppend [] [] = []
 
 -- 67A
-stringToTree:: String -> Maybe (Tree Char)
 -- "x(y,a(,b))" --> Branch 'x' (Branch 'y' Empty Empty) (Branch 'a' Empty (Branch 'b' Empty Empty))
-stringToTree = undefined
+stringToTree:: (Monad m) => String -> m (Tree Char)
+stringToTree input = runParserT (treeP <* eof) () "" input >>= \(Right t) -> return t
+
+treeP :: Monad m => ParsecT String () m (Tree Char)
+treeP = try (Branch <$> letter <* char '(' <*> treeP <* char ',' <*> treeP <* char ')')
+  <|> try (Branch <$> letter <*> return Empty <*> return Empty)
+  <|> return Empty
 
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --

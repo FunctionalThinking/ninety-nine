@@ -582,6 +582,7 @@ fitLeft :: Tree (a,(Int,Int)) -> Tree (a,(Int,Int))
 fitLeft tree = translateX offset tree
   where offset = let (_, (x,_)) = leftmost tree in (1 - x)
 
+-- 66 Compact symmetric layout
 layout66:: Tree a -> Tree (a, (Int, Int))
 layout66 tree = fitLeft $ layoutTree $ makeSymmetric $ compactLayout tree
 

@@ -1,9 +1,8 @@
 module Exercises where
 
-import Control.Monad
 import Data.Array.IO
 import System.Random (randomRIO)
-import Data.List (group, subsequences, (\\), sortOn)
+import Data.List (group, subsequences, (\\), sortOn, elemIndex, splitAt)
 import Control.Arrow ((&&&))
 import Control.Monad
 import Control.Applicative
@@ -625,9 +624,58 @@ zipAppend [] (b:bs) = map (`mappend` mempty) (b:bs)
 zipAppend [] [] = []
 
 -- 67A
-stringToTree:: String -> Maybe (Tree Char)
+stringToTree:: Monad m => String -> m (Tree Char)
 -- "x(y,a(,b))" --> Branch 'x' (Branch 'y' Empty Empty) (Branch 'a' Empty (Branch 'b' Empty Empty))
-stringToTree = undefined
+stringToTree input = do
+  (t,rest) <- treeP input
+  --guard (rest == "")
+  return t
+
+treeP :: Monad m => String -> m (Tree Char, String)
+treeP [] = return (Empty, "")
+treeP [x] = return (Branch x Empty Empty, "")
+treeP (x:y:xs)
+  | x == ')' || x == ',' = return (Empty, x:y:xs)
+  | y == '(' = do
+    (l,x':xs' ) <- treeP xs
+    --guard (x' == ',')
+    (r,x'':xs'') <- treeP xs'
+    --guard (x'' == ')')
+    return (Branch x l r, xs'')
+  | otherwise = return (Branch x Empty Empty, y:xs)
+
+-- 68
+treeToPreorder :: Tree a -> [a]
+treeToPreorder Empty = []
+treeToPreorder (Branch a left right) = [a] ++ treeToPreorder left ++ treeToPreorder right
+
+treeToInorder :: Tree a -> [a]
+treeToInorder Empty = []
+treeToInorder (Branch a l r) =  treeToInorder l ++ [a] ++ treeToInorder r
+
+preInTree :: String -> String -> Tree Char
+preInTree [] _ = Empty
+preInTree (root:rest) inorder = Branch root left right
+  where left = preInTree preLeft inLeft
+        right = preInTree preRight inRight
+        Just rootIndex = root `elemIndex` inorder
+        (preLeft, preRight) = splitAt rootIndex rest
+        (inLeft, _:inRight) = splitAt rootIndex inorder
+
+-- 69
+example = "abd..e..c.fg..."
+
+tree2ds :: Tree Char -> String
+tree2ds Empty = "."
+tree2ds (Branch a l r) = a:tree2ds l ++ tree2ds r
+
+ds2tree :: String -> (Tree Char, String)
+ds2tree "" = error "No input"
+ds2tree (x:xs)
+  | x == '.' = (Empty, xs)
+  | otherwise = (Branch x left right, xs'')
+    where (left, xs') = ds2tree xs
+          (right, xs'') = ds2tree xs'
 
 -- Problem 70B ~ 73 : Multiway trees --
 -- Problem 80 ~ 89 : Graphs --

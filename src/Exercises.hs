@@ -678,6 +678,10 @@ ds2tree (x:xs)
           (right, xs'') = ds2tree xs'
 
 -- Problem 70B ~ 73 : Multiway trees --
+-- see MultiwayTree.hs
+
 -- Problem 80 ~ 89 : Graphs --
+-- see Graph.hs
+
 -- Problem 90 ~ 94 : Miscellaneous problems --
 -- Problem 95 ~ 99 : Miscellaneous problems, continued --

@@ -1,8 +1,8 @@
 module Exercises where
 
-import Data.Array.IO
+import Data.Array.IO hiding (index)
 import System.Random (randomRIO)
-import Data.List (group, subsequences, (\\), sortOn, elemIndex, splitAt)
+import Data.List (group, subsequences, (\\), sortOn, elemIndex)
 import Control.Arrow ((&&&))
 import Control.Monad
 import Control.Applicative
@@ -425,13 +425,12 @@ minNodes 1 = 1
 minNodes h = minNodes (h-1) + minNodes (h-2) + 1
 
 maxHeight :: Int -> Int
-maxHeight n = height - 1
-              where height = length base
-                    base = takeWhile (<= n) $ map minNodes [0..]
+maxHeight n = length base - 1
+              where base = takeWhile (<= n) $ map minNodes [0..]
 
 
 minHeight :: Int -> Int
-minHeight n = ceiling $ logBase 2 (fromIntegral (n + 1))
+minHeight n = ceiling (logBase 2.0 (fromIntegral (n + 1)) :: Double)
 
 minMaxHeight :: Int -> (Int, Int)
 minMaxHeight n = (minHeight n , maxHeight n)
@@ -452,16 +451,18 @@ hbalTreeNodes a n = filter hBalance
                       , left <- hbalTreeNodes a leftN
                       , right <- hbalTreeNodes a rightN]
 
+hBalance :: Tree a -> Bool
 hBalance Empty = True
 hBalance (Branch _ left right) = hBalance left && hBalance right && abs(leftH - rightH) <= 1
   where leftH = height left
         rightH = height right
 
+height :: Tree a -> Int
 height Empty = 0
 height (Branch _ left right) = 1 + max (height left) (height right)
 
 -- Problem 61 ~ 69 : Binary trees, continued --
-
+tree4 :: Tree Int
 tree4 = Branch 1 (Branch 2 Empty (Branch 4 Empty Empty))
                  (Branch 2 Empty Empty)
 
@@ -504,6 +505,7 @@ completeBinaryTree n = go 1
     go index = if index > 0 &&  index <= n then Branch 'X' (go (index*2)) (go (index*2 + 1)) else Empty
 
 
+tree64 :: Tree Char
 tree64 = Branch 'n'
                 (Branch 'k'
                         (Branch 'c'
@@ -532,13 +534,14 @@ tree64 = Branch 'n'
 -- 64
 layout :: Tree a -> Tree (a, (Int, Int))
 layout t = fst $ sublayout t 1 0
-           where sublayout Empty h c = (Empty, 0)
+           where sublayout Empty _ _ = (Empty, 0)
                  sublayout (Branch a left right) h c = (Branch (a, (c+leftcount+1, h)) lefttree righttree, leftcount + rightcount + 1)
                                                      where (lefttree, leftcount) = sublayout left (h+1) c
                                                            (righttree, rightcount) = sublayout right (h+1) (c+leftcount+1)
 
 
 -- 65 layout tree
+tree65 :: Tree Char
 tree65 = Branch 'n'
                 (Branch 'k'
                         (Branch 'c'
@@ -627,7 +630,7 @@ zipAppend [] [] = []
 stringToTree:: Monad m => String -> m (Tree Char)
 -- "x(y,a(,b))" --> Branch 'x' (Branch 'y' Empty Empty) (Branch 'a' Empty (Branch 'b' Empty Empty))
 stringToTree input = do
-  (t,rest) <- treeP input
+  (t,_) <- treeP input
   --guard (rest == "")
   return t
 
@@ -637,9 +640,9 @@ treeP [x] = return (Branch x Empty Empty, "")
 treeP (x:y:xs)
   | x == ')' || x == ',' = return (Empty, x:y:xs)
   | y == '(' = do
-    (l,x':xs' ) <- treeP xs
+    (l,_:xs' ) <- treeP xs
     --guard (x' == ',')
-    (r,x'':xs'') <- treeP xs'
+    (r,_:xs'') <- treeP xs'
     --guard (x'' == ')')
     return (Branch x l r, xs'')
   | otherwise = return (Branch x Empty Empty, y:xs)
@@ -663,6 +666,7 @@ preInTree (root:rest) inorder = Branch root left right
         (inLeft, _:inRight) = splitAt rootIndex inorder
 
 -- 69
+example :: String
 example = "abd..e..c.fg..."
 
 tree2ds :: Tree Char -> String

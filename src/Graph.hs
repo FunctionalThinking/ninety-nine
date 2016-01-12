@@ -1,6 +1,7 @@
 module Graph where
 
 import Prelude hiding (cycle)
+import Data.List (nub)
 
 data Graph a = Graph [a] [(a,a)] deriving (Show, Eq)
 data Adj a = Adj [(a, [a])] deriving (Show, Eq)
@@ -21,7 +22,7 @@ neighbors n = concatMap (neighbor n)
             | n' == b = [a]
             | otherwise = []
 
--- 81 (**) Path from one node to another one
+-- 81 (**) Path from one node to another one (for directed)
 paths :: Eq a => a -> a -> [(a,a)] -> [[a]]
 paths start end graph
   | start == end = [[start]]
@@ -36,28 +37,40 @@ ddeleteNode :: Eq a => a -> [(a,a)] -> [(a,a)]
 ddeleteNode a = filter ((/=a).fst)
 
 
--- 82 (*) Cycle from a given node
+-- 82 (*) Cycle from a given node (for directed!)
 cycle :: Eq a => a -> [(a,a)] -> [[a]]
 cycle s edges = map (s:) $ concatMap (\n' -> paths n' s edges) $ dneighbors s edges
 
-k4 = Graph ['a', 'b', 'c', 'd']
-     [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a'), ('a', 'c'), ('b', 'd')]
+k4 :: Graph Char
+k4 = Graph "abcd" [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a'), ('a', 'c'), ('b', 'd')]
+
 -- 83 (**) Construct all spanning trees
 spanTree :: (Eq a) => Graph a -> [Graph a]
-spanTree g
+spanTree = nub . spanTree'
+spanTree' g
   | not (isConnected g) = []
   | isTree g = [g]
-  | otherwise =  concatMap spanTree subgraphs
-    where subgraphs = makeSub g
-          makeSub (Graph nodes edges) = map f edges
-            where f edge = Graph nodes $ filter (/= edge) edges
+  | otherwise =  concatMap spanTree $ subgraphs g
+
+subgraphs :: Eq a => Graph a -> [Graph a]
+subgraphs (Graph nodes edges) = [Graph nodes edges' | e <- edges, let edges' = filter (/= e) edges]
 
 isTree :: Eq a => Graph a -> Bool
-isTree (Graph nodes edges) = all hasNoCycle nodes
-  where hasNoCycle node = [] == cycle node edges
+isTree (Graph nodes edges) = and [1 == length (paths' a b edges) | a <- nodes, b <- nodes, a /= b]
+
+paths' :: Eq a => a -> a -> [(a,a)] -> [[a]]
+paths' start end edges
+  | start == end = [[start]]
+  | otherwise =  map (start:) subsolution
+    where subsolution = concatMap (\n -> paths' n end subgraph) (neighbors start edges)
+          subgraph = deleteNode start edges
+
+deleteNode :: Eq a => a -> [(a,a)] -> [(a,a)]
+deleteNode a = filter f
+  where f (b,c) = a /= b && a /= c
 
 isConnected :: Eq a => Graph a -> Bool
 isConnected (Graph [] _) = True
 isConnected (Graph (n:ns) edges) = all hasPath ns
   where
-    hasPath to = paths n to edges /= []
+    hasPath to = paths' n to edges /= []

@@ -40,11 +40,24 @@ ddeleteNode a = filter ((/=a).fst)
 cycle :: Eq a => a -> [(a,a)] -> [[a]]
 cycle s edges = map (s:) $ concatMap (\n' -> paths n' s edges) $ dneighbors s edges
 
-
+k4 = Graph ['a', 'b', 'c', 'd']
+     [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a'), ('a', 'c'), ('b', 'd')]
 -- 83 (**) Construct all spanning trees
-spanTree :: Graph a -> [Graph a]
-spanTree a
-  | not (isConnected a) = []
-  | isTree a = [a]
+spanTree :: (Eq a) => Graph a -> [Graph a]
+spanTree g
+  | not (isConnected g) = []
+  | isTree g = [g]
   | otherwise =  concatMap spanTree subgraphs
-    where subgraphs = undefined
+    where subgraphs = makeSub g
+          makeSub (Graph nodes edges) = map f edges
+            where f edge = Graph nodes $ filter (/= edge) edges
+
+isTree :: Eq a => Graph a -> Bool
+isTree (Graph nodes edges) = all hasNoCycle nodes
+  where hasNoCycle node = [] == cycle node edges
+
+isConnected :: Eq a => Graph a -> Bool
+isConnected (Graph [] _) = True
+isConnected (Graph (n:ns) edges) = all hasPath ns
+  where
+    hasPath to = paths n to edges /= []

@@ -1,7 +1,7 @@
 module Graph where
 
 import Prelude hiding (cycle)
-import Data.List (nub)
+import Data.List (nub, sortOn, (\\))
 
 data Graph a = Graph [a] [(a,a)] deriving (Show, Eq)
 data Adj a = Adj [(a, [a])] deriving (Show, Eq)
@@ -74,3 +74,24 @@ isConnected (Graph [] _) = True
 isConnected (Graph (n:ns) edges) = all hasPath ns
   where
     hasPath to = paths' n to edges /= []
+
+
+-- 84
+prim :: (Eq a, Ord w) => [a] -> [(a,a,w)] -> [(a,a,w)]
+prim nodes@(n:ns) edges = go [n] [] neighborEdges (edges \\ neighborEdges)
+  where go connected treeedges neighbors unseen =
+          if length nodes == length connected
+          then treeedges
+          else go connected' treeedges' neighbors' unseen'
+          where
+            e@(a,b,_):rest = sortOn weight neighbors
+            added = if a `elem` connected then b else a
+            connected' = added : connected
+            treeedges' = e : treeedges
+            neighbors' = filter f (edgesOf added ++ rest)
+              where f (a,b,_) = not (a `elem` connected' && b `elem` connected')
+            edgesOf n = filter (on n) unseen
+            unseen' = filter (not.on n) unseen
+        neighborEdges= filter (on n) edges
+        on node (a,b,_) = node == a || node == b
+        weight (_,_,w) = w

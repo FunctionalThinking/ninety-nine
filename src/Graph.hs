@@ -1,9 +1,17 @@
 module Graph where
 
 import Prelude hiding (cycle)
-import Data.List (nub, sortOn, (\\))
+import Data.List (nub, sort, sortOn, (\\), permutations)
+import Debug.Trace
+data Graph a = Graph [a] [(a,a)] deriving (Show)
 
-data Graph a = Graph [a] [(a,a)] deriving (Show, Eq)
+instance Functor Graph where
+  fmap f (Graph nodes edges) = Graph (fmap f nodes) [(f a, f b) | (a,b) <- edges]
+
+instance (Ord a) => Eq (Graph a) where
+  (Graph nodesA edgesA) == (Graph nodesB edgesB) = sort nodesA == sort nodesB && sort edgesA == sort edgesB
+
+
 data Adj a = Adj [(a, [a])] deriving (Show, Eq)
 
 
@@ -45,7 +53,7 @@ k4 :: Graph Char
 k4 = Graph "abcd" [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a'), ('a', 'c'), ('b', 'd')]
 
 -- 83 (**) Construct all spanning trees
-spanTree :: (Eq a) => Graph a -> [Graph a]
+spanTree :: (Ord a) => Graph a -> [Graph a]
 spanTree = nub . spanTree'
 spanTree' g
   | not (isConnected g) = []
@@ -95,3 +103,67 @@ prim nodes@(n:ns) edges = go [n] [] neighborEdges (edges \\ neighborEdges)
         neighborEdges= filter (on n) edges
         on node (a,b,_) = node == a || node == b
         weight (_,_,w) = w
+
+
+-- 85
+{-
+(**) Graph isomorphism
+
+Two graphs G1(N1,E1) and G2(N2,E2) are isomorphic
+if there is a bijection
+  f: N1 -> N2 such that
+  for any nodes X,Y of N1, X and Y are adjacent if and only if f(X) and f(Y) are adjacent.
+
+Write a predicate that determines whether two graphs are isomorphic.
+Hint: Use an open-ended list to represent the function f.
+
+Example in Haskell:
+
+graphG1 = [1,2,3,4,5,6,7,8] [(1,5),(1,6),(1,7),(2,5),(2,6),(2,8),(3,5),(3,7),(3,8),(4,6),(4,7),(4,8)]
+graphH1 = [1,2,3,4,5,6,7,8] [(1,2),(1,4),(1,5),(6,2),(6,5),(6,7),(8,4),(8,5),(8,7),(3,2),(3,4),(3,7)]
+iso graphG1 graphH1
+True
+-}
+
+graphG1 = Graph [1,2,3,4,5,6,7,8] [(1,5),(1,6),(1,7),(2,5),(2,6),(2,8),(3,5),(3,7),(3,8),(4,6),(4,7),(4,8)]
+graphH1 = Graph [1,2,3,4,5,6,7,8] [(1,2),(1,4),(1,5),(6,2),(6,5),(6,7),(8,4),(8,5),(8,7),(3,2),(3,4),(3,7)]
+
+iso :: (Eq a, Ord b) => Graph a -> Graph b -> Bool
+iso a@(Graph nodesA edgesA) b@(Graph nodesB edgesB) = any (\f -> fmap f a == b) fs
+  where fs = [ makeF nodesA nodesB' | nodesB' <- permutations nodesB]
+        makeF as bs = \a -> snd $ head $ filter (\(a',_) -> a' == a) pairs
+          where pairs = zip as bs
+
+
+-- 86
+{-
+8 Problem 86
+(**) Node degree and graph coloration
+
+a) Write a predicate degree(Graph,Node,Deg) that determines the degree of a given node.
+
+b) Write a predicate that generates a list of all nodes of a graph sorted according to decreasing degree.
+
+c) Use Welsh-Powell's algorithm to paint the nodes of a graph in such a way that adjacent nodes have different colors.
+
+Example in Haskell:
+http://www.slideshare.net/PriyankJain26/graph-coloring-48222920
+
+kcolor (Graph ['a','b','c','d','e','f','g','h','i','j']
+[('a','b'),('a','e'),('a','f'),('b','c'),('b','g'),
+ ('c','d'),('c','h'),('d','e'),('d','i'),('e','j'),
+ ('f','h'),('f','i'),('g','i'),('g','j'),('h','j')])
+[('a',1),('b',2),('c',1),('d',2),('e',3),('f',2),('g',1),('h',3),('i',3),('j',2)]
+-}
+
+kcolor :: (Show a, Eq a) => Graph a -> [(a,Int)]
+kcolor (Graph nodes edges) = [ (n, color) | n <- nodes, let (Just color) = lookup n colorMap ]
+  where colorMap = loop sortedNodes 1 [] [] []
+        sortedNodes = map fst $ sortOn (negate.snd) [ (n, degree n) | n <- nodes]
+        degree node = length $ filter (\(a,b) -> a == node || b == node) edges
+        loop [] _ colored _ [] = colored
+        loop [] color colored coloredNeighbors uncolored = colored ++ loop (reverse uncolored) (color+1) [] [] []
+        loop (n:ns) color colored coloredNeighbors uncolored =
+              if n `elem` coloredNeighbors
+              then loop ns color colored coloredNeighbors (n:uncolored)
+              else loop ns color ((n,color):colored) (neighbors n edges ++ coloredNeighbors) uncolored

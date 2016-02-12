@@ -3,6 +3,7 @@ module Graph where
 import Prelude hiding (cycle)
 import Data.List (nub, sort, sortOn, (\\), permutations)
 import Debug.Trace
+
 data Graph a = Graph [a] [(a,a)] deriving (Show)
 
 instance Functor Graph where
@@ -167,3 +168,42 @@ kcolor (Graph nodes edges) = [ (n, color) | n <- nodes, let (Just color) = looku
               if n `elem` coloredNeighbors
               then loop ns color colored coloredNeighbors (n:uncolored)
               else loop ns color ((n,color):colored) (neighbors n edges ++ coloredNeighbors) uncolored
+
+-- 87
+{-
+(**) Depth-first order graph traversal (alternative solution)
+
+Write a predicate that generates a depth-first order graph traversal sequence.
+The starting point should be specified, and the output should be a list of nodes
+that are reachable from this starting point (in depth-first order).
+
+Example in Haskell:
+
+depthfirst ([1,2,3,4,5,6,7], [(1,2),(2,3),(1,4),(3,4),(5,2),(5,4),(6,7)]) 1
+[1,2,3,4,5]
+-}
+
+depthfirst :: Eq a => Graph a -> a -> [a]
+depthfirst (Graph nodes edges) start = go [] [start]
+  where go seen [] = seen
+        go seen (x:tovisit)
+          | x `elem` seen = go seen tovisit
+          | otherwise     = go (seen ++ [x]) (neighbors x edges ++ tovisit)
+
+-- 88
+{-
+(**) Connected components (alternative solution)
+
+Write a predicate that splits a graph into its connected components.
+
+Example in Haskell:
+
+connectedcomponents (Graph [1,2,3,4,5,6,7] [(1,2),(2,3),(1,4),(3,4),(5,2),(5,4),(6,7)])
+[[1,2,3,4,5][6,7]]
+-}
+
+connectedcomponents :: Eq a => Graph a -> [[a]]
+connectedcomponents (Graph [] edges) = []
+connectedcomponents g@(Graph nodes@(x:xs) edges) = comp : connectedcomponents (Graph nodes' edges)
+  where comp = depthfirst g x
+        nodes' = nodes \\ comp
